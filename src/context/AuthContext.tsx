@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Usuario } from '../types';
-import { databaseService } from '../services/databaseService';
 
 interface AuthContextType {
   user: Usuario | null;
@@ -42,6 +41,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (usuario: string, password: string, type: 'admin' | 'customer' = 'admin'): Promise<boolean> => {
     try {
+      console.log('Intentando login:', { usuario, type });
+      
       const response = await fetch('http://localhost:3001/api/auth/login', {
         method: 'POST',
         headers: {
@@ -50,8 +51,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ usuario, password, type })
       });
 
+      console.log('Respuesta del servidor:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Datos recibidos:', data);
         
         if (type === 'admin' && data.usuario) {
           const mockUser: Usuario = {
@@ -86,6 +90,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.setItem('norteexpreso_token', data.token);
           return true;
         }
+      } else {
+        const errorData = await response.json();
+        console.error('Error del servidor:', errorData);
       }
       return false;
     } catch (error) {
@@ -96,20 +103,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerCustomer = async (data: any): Promise<{ success: boolean; error?: string }> => {
     try {
-      const result = await databaseService.registrarCliente(data);
-      return result;
+      console.log('Registrando cliente:', data);
+      
+      const response = await fetch('http://localhost:3001/api/auth/register-cliente', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+
+      console.log('Respuesta registro cliente:', response.status);
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Cliente registrado:', result);
+        return { success: true };
+      } else {
+        const errorData = await response.json();
+        console.error('Error registrando cliente:', errorData);
+        return { success: false, error: errorData.error || 'Error al registrar cliente' };
+      }
     } catch (error) {
-      console.error('Error registrando cliente:', error);
+      console.error('Error de conexión registrando cliente:', error);
       return { success: false, error: 'Error de conexión' };
     }
   };
 
   const registerAdmin = async (data: any): Promise<{ success: boolean; error?: string }> => {
     try {
-      const result = await databaseService.registrarAdmin(data);
-      return result;
+      console.log('Registrando admin:', data);
+      
+      const response = await fetch('http://localhost:3001/api/auth/register-admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+
+      console.log('Respuesta registro admin:', response.status);
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Admin registrado:', result);
+        return { success: true };
+      } else {
+        const errorData = await response.json();
+        console.error('Error registrando admin:', errorData);
+        return { success: false, error: errorData.error || 'Error al registrar administrador' };
+      }
     } catch (error) {
-      console.error('Error registrando admin:', error);
+      console.error('Error de conexión registrando admin:', error);
       return { success: false, error: 'Error de conexión' };
     }
   };

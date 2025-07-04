@@ -56,19 +56,6 @@ export function BookingPage() {
     loadOccupiedSeats();
   }, [viaje.codigo]);
 
-  // Simulación de asientos ocupados con género para la UI
-  const occupiedSeatsData = {
-    2: { gender: 'M', name: 'Juan P.' },
-    5: { gender: 'F', name: 'María G.' },
-    8: { gender: 'M', name: 'Carlos M.' },
-    12: { gender: 'F', name: 'Ana R.' },
-    15: { gender: 'M', name: 'Luis S.' },
-    18: { gender: 'F', name: 'Carmen L.' },
-    23: { gender: 'M', name: 'Pedro H.' },
-    27: { gender: 'F', name: 'Rosa T.' },
-    31: { gender: 'M', name: 'Miguel A.' }
-  };
-
   // Políticas de mascotas
   const politicaMascota = {
     peso_maximo: 8, // kg
@@ -83,14 +70,12 @@ export function BookingPage() {
     const totalSeats = viaje.bus.num_asientos;
     
     for (let i = 1; i <= totalSeats; i++) {
-      const occupiedData = occupiedSeatsData[i as keyof typeof occupiedSeatsData];
       const isOccupied = occupiedSeats.includes(i);
       
       seats.push({
         number: i,
         isOccupied: isOccupied,
-        isSelected: selectedSeats.includes(i),
-        occupiedBy: isOccupied ? occupiedData : undefined
+        isSelected: selectedSeats.includes(i)
       });
     }
     return seats;
@@ -114,7 +99,6 @@ export function BookingPage() {
       nombre: reniecService.formatearNombre(data.nombres),
       apellidos: `${reniecService.formatearNombre(data.apellidoPaterno)} ${reniecService.formatearNombre(data.apellidoMaterno)}`,
       dni: data.dni,
-      // No autocompletar edad y género, el usuario los ingresará manualmente
     };
     setPassengerData(newData);
   };
@@ -300,16 +284,10 @@ export function BookingPage() {
                         <span className="text-gray-700 dark:text-gray-300 font-medium">Seleccionado</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-                          <span className="text-white text-xs font-bold">👨</span>
+                        <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg">
+                          <span className="text-white text-xs font-bold">✗</span>
                         </div>
-                        <span className="text-gray-700 dark:text-gray-300 font-medium">Ocupado (Hombre)</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg">
-                          <span className="text-white text-xs font-bold">👩</span>
-                        </div>
-                        <span className="text-gray-700 dark:text-gray-300 font-medium">Ocupado (Mujer)</span>
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">Ocupado</span>
                       </div>
                     </div>
                   </div>
@@ -327,28 +305,16 @@ export function BookingPage() {
                           key={seat.number}
                           onClick={() => handleSeatClick(seat.number)}
                           disabled={seat.isOccupied}
-                          className={`w-14 h-14 rounded-xl text-sm font-bold transition-all duration-300 relative group shadow-lg ${
+                          className={`w-14 h-14 rounded-xl text-sm font-bold transition-all duration-300 shadow-lg ${
                             seat.isOccupied
-                              ? seat.occupiedBy?.gender === 'M'
-                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white cursor-not-allowed'
-                                : 'bg-gradient-to-r from-pink-500 to-pink-600 text-white cursor-not-allowed'
+                              ? 'bg-gradient-to-r from-red-500 to-red-600 text-white cursor-not-allowed'
                               : seat.isSelected
                               ? 'bg-gradient-to-r from-azul-oscuro to-primary-600 dark:from-amarillo-dorado dark:to-yellow-500 text-white dark:text-azul-oscuro transform scale-110 shadow-xl'
                               : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 hover:scale-105 hover:shadow-xl'
                           }`}
-                          title={seat.isOccupied ? `Ocupado por ${seat.occupiedBy?.name}` : `Asiento ${seat.number}`}
+                          title={seat.isOccupied ? `Asiento ${seat.number} - Ocupado` : `Asiento ${seat.number}`}
                         >
-                          {seat.isOccupied ? (
-                            seat.occupiedBy?.gender === 'M' ? '👨' : '👩'
-                          ) : (
-                            seat.number
-                          )}
-                          
-                          {seat.isOccupied && (
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-black text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 shadow-xl">
-                              {seat.occupiedBy?.name}
-                            </div>
-                          )}
+                          {seat.isOccupied ? '✗' : seat.number}
                         </button>
                       ))}
                     </div>
